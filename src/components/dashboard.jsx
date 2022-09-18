@@ -31,7 +31,7 @@ const Dashboard = () => {
 	const [queryParams, setQueryParams] = useState(qParams);
 	const [jsonPayload, setJsonPayload] = useState(bodyPayload);
 	const [apiResponse, setApiResponse] = useState('');
-	const [dataToMap, setDataToMap] = useState([]);
+	const [jsonData, setJsonData] = useState('');
 
 	const addHeaderInput = () => {
 		setHeaders(s => {
@@ -153,15 +153,23 @@ const Dashboard = () => {
 
 	const mapDataToPayLoad = (key, value) => {
 
-		setQueryParams(s => {
-			return [
-				...s,
-				{
-					key: key,
-					value: value
-				}
-			];
-		});
+		// setQueryParams(s => {
+		// 	return [
+		// 		...s,
+		// 		{
+		// 			key: key,
+		// 			value: value
+		// 		}
+		// 	];
+		// });
+
+		setJsonData(prevState => {
+			if (prevState === '') {
+				return prevState + `"${key}" : "${value}"`
+			}
+
+			return prevState + `,\n"${key}" : "${value}"`
+		})
 	}
 
 
@@ -284,6 +292,10 @@ const Dashboard = () => {
 						</>
 					))
 				}
+			</div>
+
+			<div>
+				<textarea name="jsonData" value={jsonData} onChange={e => setJsonData(e.target.value)}/>
 			</div>
 
 			<br/>
