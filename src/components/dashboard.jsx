@@ -33,6 +33,7 @@ const Dashboard = () => {
 	const [queryParams, setQueryParams] = useState(qParams);
 	const [apiResponse, setApiResponse] = useState('');
 	const [jsonData, setJsonData] = useState('');
+	const [requestList, setRequestList] = useState([]);
 
 	const addHeaderInput = () => {
 		setHeaders(s => {
@@ -211,6 +212,58 @@ const Dashboard = () => {
 		})
 	}
 
+	const getRequestList = async () => {
+		const response = await axios.get('http://localhost:9000/api/request/list');
+		if (response && response.data && response.data.status && response.data.data) {
+			setRequestList(response.data.data);
+		}
+	}
+
+
+	const setRequestData = (requestDetails) => {
+		const {authorization_type, body_data, headers, name, params, request_type, request_url}  = requestDetails;
+
+		setAuthorizationType(authorization_type);
+		setMethodType(request_type);
+		setJsonData(JSON.stringify(body_data));
+		setUrl(request_url);
+
+
+		// set headers
+		if (headers) {
+			const tempArr = [];
+			for (const key in headers) {
+				tempArr.push({key: key, value: headers[key]});
+			}
+			setHeaders(tempArr);
+		}
+
+		// set Params
+		if (params) {
+			const tempArr = [];
+			for (const key in params) {
+				tempArr.push({key: key, value: params[key]});
+			}
+			setQueryParams(tempArr);
+		}
+
+	}
+
+
+	const getRequestDetailsById = async (requestId) => {
+		const response = await axios.get(`http://localhost:9000/api/request/${requestId}`);
+
+		if (response.data && response.data.status) {
+			setRequestData(response.data.data)
+		}
+
+	}
+
+
+	useEffect(() => {
+		getRequestList();
+	}, []);
+
 
 	return (
 		<div>
@@ -351,6 +404,20 @@ const Dashboard = () => {
 				<button onClick={handleApiHit}>Hit</button>
 				{'      '}
 				<button onClick={saveApi}>Save</button>
+			</div>
+			<br/>
+
+			<div>
+				{
+					requestList.length && requestList.map((request) => (
+						<>
+							<div key={request.id.toString()}>
+								{request.name } {"    "}
+								<button onClick={() => getRequestDetailsById(request.id)}>{"   "}Map</button>
+							</div>
+						</>
+					))
+				}
 			</div>
 
 			<br/>
