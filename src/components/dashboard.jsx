@@ -1,27 +1,29 @@
 import {useState, useEffect} from "react";
 import axios from "axios";
+import {
+	GET,
+	POST,
+	PUT,
+	PATCH,
+	DELETE,
+	AUTH_TYPE_NONE,
+	AUTH_TYPE_BASIC,
+	AUTH_TYPE_BEARER
+} from '../../src/constants/HttpConstant';
 
 const Dashboard = () => {
 	const tempData = {name: 'John', age: 26, country: "USA"};
-	const [methodType, setMethodType] = useState(1);
-	const [authorizationType, setAuthorizationType] = useState(1);
+	const [methodType, setMethodType] = useState(GET);
+	const [authorizationType, setAuthorizationType] = useState(AUTH_TYPE_NONE);
 	const [url, setUrl] = useState('');
 	const [authData, setAuthData] = useState({token: '', user_name: '', password: ''});
 	const inputArr = [
 		{
 			key: "",
 			value: "",
-			id: 1
 		}
 	];
 	const qParams = [
-		{
-			key: "",
-			value: "",
-			id: 1
-		}
-	];
-	const bodyPayload = [
 		{
 			key: "",
 			value: "",
@@ -29,7 +31,6 @@ const Dashboard = () => {
 	];
 	const [headers, setHeaders] = useState(inputArr);
 	const [queryParams, setQueryParams] = useState(qParams);
-	const [jsonPayload, setJsonPayload] = useState(bodyPayload);
 	const [apiResponse, setApiResponse] = useState('');
 	const [jsonData, setJsonData] = useState('');
 
@@ -60,8 +61,6 @@ const Dashboard = () => {
 
 	const handleHeaderChange = e => {
 		e.preventDefault();
-
-		console.log(e.target.name, e.target.value)
 
 		const index = e.target.id;
 		setHeaders(s => {
@@ -107,26 +106,48 @@ const Dashboard = () => {
 	const formatDataForRequest = () => {
 		const obj = {};
 		const tempQueryParams = {};
+		const tempHeaders = {};
 		obj.request_type = methodType;
 		obj.url = url;
 
 		// query param formation
 		for (let q of queryParams) {
 			for (const key in q) {
+				if (q[key] === '') {
+					continue;
+				}
 				tempQueryParams[key] = q[key];
 			}
 		}
-		obj.query_params = tempQueryParams;
+
+		if (Object.keys(tempQueryParams).length) {
+			obj.query_params = tempQueryParams;
+		}
+
+		// header formation
+		for (let q of headers) {
+			for (const key in q) {
+				if (q[key] === '') {
+					continue;
+				}
+				tempHeaders[key] = q[key];
+			}
+		}
+
+		if (Object.keys(tempHeaders).length) {
+			obj.headers = tempHeaders;
+		}
+
 
 		// auth data formation
-		if (authorizationType === 1) {
+		if (authorizationType === AUTH_TYPE_BEARER) {
 			obj.auth_data = {
-				type: 'BEARER_TOKEN',
+				type: AUTH_TYPE_BEARER,
 				token: authData.token
 			}
 		}
 
-		if (authorizationType === 2) {
+		if (authorizationType === AUTH_TYPE_BASIC) {
 			obj.auth_data = {
 				type: 'BASIC',
 				user_name: authData.user_name,
@@ -134,11 +155,21 @@ const Dashboard = () => {
 			}
 		}
 
+		if (jsonData !== '' && methodType !== GET) {
+			obj.request_payload = JSON.parse(`{${jsonData}}`);
+		}
+
 		return obj;
 	}
 
 
 	const handleApiHit = async () => {
+
+		if (!url) {
+			alert('enter url');
+			return
+		}
+
 		try {
 			const response = await axios.post('http://localhost:9000/api/request/perform', formatDataForRequest());
 			if (response && response.data && response.data.status) {
@@ -151,17 +182,25 @@ const Dashboard = () => {
 	}
 
 
-	const mapDataToPayLoad = (key, value) => {
+	const saveApi = async () => {
+		if (!url) {
+			alert('enter url');
+			return
+		}
 
-		// setQueryParams(s => {
-		// 	return [
-		// 		...s,
-		// 		{
-		// 			key: key,
-		// 			value: value
-		// 		}
-		// 	];
-		// });
+		try {
+			const response = await axios.post('http://localhost:9000/api/request', formatDataForRequest());
+			if (response && response.data && response.data.status) {
+				setApiResponse(JSON.stringify(response.data.data))
+			}
+			console.log('response', response)
+		} catch (e) {
+			console.log('errr', e);
+		}
+	}
+
+
+	const mapDataToPayLoad = (key, value) => {
 
 		setJsonData(prevState => {
 			if (prevState === '') {
@@ -177,17 +216,19 @@ const Dashboard = () => {
 		<div>
 			<div>
 				<label>
-					Select method type
+					Select method type: {"   "}
 					<select value={methodType} onChange={handleMethodTypChange}>
-						<option value={1}>GET</option>
-						<option value={2}>POST</option>
-						<option value={3}>PUT</option>
+						<option value={GET}>GET</option>
+						<option value={POST}>POST</option>
+						<option value={PUT}>PUT</option>
+						<option value={PATCH}>PATCH</option>
+						<option value={DELETE}>DELETE</option>
 					</select>
 				</label>
 			</div>
 			<br/>
 			<div>
-				<label>URL</label>
+				<label>URL: {"   "}</label>
 				<input
 					onChange={e => setUrl(e.target.value)}
 					name="url"
@@ -199,32 +240,39 @@ const Dashboard = () => {
 			<div>
 				<div>
 					<label>
-						Select Auth type
+						Select Auth type {"  "}
 						<select value={authorizationType} onChange={handleAuthorizationTypeChange}>
-							<option value={1}>Basic</option>
-							<option value={2}>Bearer</option>
+							<option value={AUTH_TYPE_NONE}>None</option>
+							<option value={AUTH_TYPE_BASIC}>Basic</option>
+							<option value={AUTH_TYPE_BEARER}>Bearer</option>
 						</select>
 					</label>
 				</div>
 				<br/>
+
 				<div>
-					<label>Bearer</label>
+					<label>Bearer {"   "}</label>
 					<input type="text" name="token" value={authData.token} onChange={handleAuthorizationDataSet}/>
 				</div>
+
 				<br/>
+
 				<div>
 					<div>
 						<label>Basic</label>
-						<div>
-							<label>UserName</label>
+						<div style={{marginLeft: '15px'}}>
+							<label>UserName {"  "}</label>
 							<input type="text" name="user_name" value={authData.user_name}
 							       onChange={handleAuthorizationDataSet}/>
-							<label>Password</label>
+							<br/>
+
+							<label>Password {"   "}</label>
 							<input type="password" name="password" value={authData.password}
 							       onChange={handleAuthorizationDataSet}/>
 						</div>
 					</div>
 				</div>
+
 
 			</div>
 			<br/>
@@ -295,12 +343,14 @@ const Dashboard = () => {
 			</div>
 
 			<div>
-				<textarea name="jsonData" value={jsonData} onChange={e => setJsonData(e.target.value)}/>
+				<textarea name="jsonData" rows={10} cols={50} value={jsonData} onChange={e => setJsonData(e.target.value)}/>
 			</div>
 
 			<br/>
 			<div>
-				<button onClick={handleApiHit}>Hit API</button>
+				<button onClick={handleApiHit}>Hit</button>
+				{'      '}
+				<button onClick={saveApi}>Save</button>
 			</div>
 
 			<br/>
