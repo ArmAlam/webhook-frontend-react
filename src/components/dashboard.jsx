@@ -247,6 +247,9 @@ const Dashboard = () => {
 			const tempString = testStr.substring(1, testStr.length - 1);
 			body_data && setJsonData(tempString);
 		}
+		if (!body_data) {
+			setJsonData('');
+		}
 
 
 		// set headers
@@ -348,7 +351,7 @@ const Dashboard = () => {
 					(Number(authorizationType) === AUTH_TYPE_BEARER) ?
 						(<>
 								<div>
-									<label>Bearer {"   "}</label>
+									<label>Token: {"   "}</label>
 									<input type="text" name="token" value={authData.token}
 									       onChange={handleAuthorizationDataSet}/>
 								</div>
