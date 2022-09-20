@@ -12,7 +12,13 @@ import {
 } from '../../src/constants/HttpConstant';
 
 const Dashboard = () => {
-	const tempData = {name: 'John', age: 26, country: "USA"};
+	const tempData = {
+		"first_name": 'John',
+		last_name: "doe",
+		email: "aoyan@orangetoolz.com",
+		password: 123456,
+		confirm_password: 123456
+	};
 	const [methodType, setMethodType] = useState(GET);
 	const [authorizationType, setAuthorizationType] = useState(AUTH_TYPE_NONE);
 	const [url, setUrl] = useState('');
@@ -223,8 +229,18 @@ const Dashboard = () => {
 
 		setAuthorizationType(authorization_type);
 		setMethodType(request_type);
-		setJsonData(JSON.stringify(body_data));
 		setUrl(request_url);
+		setRequestName(name)
+
+		// set body data
+
+		if (body_data) {
+			let testStr = JSON.stringify(body_data)
+			const tempString = testStr.substring(1, testStr.length - 1);
+
+			console.log(tempString)
+			body_data && setJsonData(tempString);
+		}
 
 
 		// set headers
