@@ -34,6 +34,7 @@ const Dashboard = () => {
 	const [apiResponse, setApiResponse] = useState('');
 	const [jsonData, setJsonData] = useState('');
 	const [requestList, setRequestList] = useState([]);
+	const [requestName, setRequestName] = useState('');
 
 	const addHeaderInput = () => {
 		setHeaders(s => {
@@ -113,11 +114,8 @@ const Dashboard = () => {
 
 		// query param formation
 		for (let q of queryParams) {
-			for (const key in q) {
-				if (q[key] === '') {
-					continue;
-				}
-				tempQueryParams[key] = q[key];
+			if (q.key && q.value) {
+				tempQueryParams[q.key] = q.value;
 			}
 		}
 
@@ -127,11 +125,8 @@ const Dashboard = () => {
 
 		// header formation
 		for (let q of headers) {
-			for (const key in q) {
-				if (q[key] === '') {
-					continue;
-				}
-				tempHeaders[key] = q[key];
+			if (q.key && q.value) {
+				tempHeaders[q.key] = q.value;
 			}
 		}
 
@@ -141,16 +136,16 @@ const Dashboard = () => {
 
 
 		// auth data formation
-		if (authorizationType === AUTH_TYPE_BEARER) {
+		if (Number(authorizationType) === AUTH_TYPE_BEARER) {
 			obj.auth_data = {
 				type: AUTH_TYPE_BEARER,
 				token: authData.token
 			}
 		}
 
-		if (authorizationType === AUTH_TYPE_BASIC) {
+		if (Number(authorizationType) === AUTH_TYPE_BASIC) {
 			obj.auth_data = {
-				type: 'BASIC',
+				type: AUTH_TYPE_BASIC,
 				user_name: authData.user_name,
 				password: authData.password
 			}
@@ -159,6 +154,8 @@ const Dashboard = () => {
 		if (jsonData !== '' && methodType !== GET) {
 			obj.request_payload = JSON.parse(`{${jsonData}}`);
 		}
+
+		obj.name = requestName;
 
 		return obj;
 	}
@@ -193,6 +190,7 @@ const Dashboard = () => {
 			const response = await axios.post('http://localhost:9000/api/request', formatDataForRequest());
 			if (response && response.data && response.data.status) {
 				setApiResponse(JSON.stringify(response.data.data))
+				getRequestList()
 			}
 			console.log('response', response)
 		} catch (e) {
@@ -221,7 +219,7 @@ const Dashboard = () => {
 
 
 	const setRequestData = (requestDetails) => {
-		const {authorization_type, body_data, headers, name, params, request_type, request_url}  = requestDetails;
+		const {authorization_type, body_data, headers, name, params, request_type, request_url} = requestDetails;
 
 		setAuthorizationType(authorization_type);
 		setMethodType(request_type);
@@ -396,13 +394,18 @@ const Dashboard = () => {
 			</div>
 
 			<div>
-				<textarea name="jsonData" rows={10} cols={50} value={jsonData} onChange={e => setJsonData(e.target.value)}/>
+				<textarea name="jsonData" rows={10} cols={50} value={jsonData}
+				          onChange={e => setJsonData(e.target.value)}/>
 			</div>
 
 			<br/>
 			<div>
 				<button onClick={handleApiHit}>Hit</button>
 				{'      '}
+				<br/>
+
+				<input type="text" name="request_name" value={requestName}
+				       onChange={(e) => setRequestName(e.target.value)}/>
 				<button onClick={saveApi}>Save</button>
 			</div>
 			<br/>
@@ -412,7 +415,7 @@ const Dashboard = () => {
 					requestList.length && requestList.map((request) => (
 						<>
 							<div key={request.id.toString()}>
-								{request.name } {"    "}
+								{request.name} {"    "}
 								<button onClick={() => getRequestDetailsById(request.id)}>{"   "}Map</button>
 							</div>
 						</>
