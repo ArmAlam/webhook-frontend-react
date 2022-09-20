@@ -225,9 +225,17 @@ const Dashboard = () => {
 
 
 	const setRequestData = (requestDetails) => {
-		const {authorization_type, body_data, headers, name, params, request_type, request_url} = requestDetails;
+		const {
+			authorization_type,
+			authorization_credentials,
+			body_data,
+			headers,
+			name,
+			params,
+			request_type,
+			request_url
+		} = requestDetails;
 
-		setAuthorizationType(authorization_type);
 		setMethodType(request_type);
 		setUrl(request_url);
 		setRequestName(name)
@@ -237,8 +245,6 @@ const Dashboard = () => {
 		if (body_data) {
 			let testStr = JSON.stringify(body_data)
 			const tempString = testStr.substring(1, testStr.length - 1);
-
-			console.log(tempString)
 			body_data && setJsonData(tempString);
 		}
 
@@ -260,6 +266,27 @@ const Dashboard = () => {
 			}
 			setQueryParams(tempArr);
 		}
+
+		// Authorization Type set;
+		setAuthorizationType(authorization_type);
+
+		if ((Number(authorization_type) === AUTH_TYPE_BASIC) && authorization_credentials) {
+			const tempAuthData = JSON.parse(authorization_credentials);
+			setAuthData(prevState => ({
+				...prevState,
+				user_name: tempAuthData.user_name || '',
+				password: tempAuthData.password || '',
+			}))
+		}
+
+		if ((Number(authorization_type) === AUTH_TYPE_BEARER) && authorization_credentials) {
+			const tempAuthData = JSON.parse(authorization_credentials);
+			setAuthData(prevState => ({
+				...prevState,
+				token: tempAuthData.token || '',
+			}))
+		}
+
 
 	}
 
@@ -317,28 +344,41 @@ const Dashboard = () => {
 				</div>
 				<br/>
 
-				<div>
-					<label>Bearer {"   "}</label>
-					<input type="text" name="token" value={authData.token} onChange={handleAuthorizationDataSet}/>
-				</div>
+				{
+					(Number(authorizationType) === AUTH_TYPE_BEARER) ?
+						(<>
+								<div>
+									<label>Bearer {"   "}</label>
+									<input type="text" name="token" value={authData.token}
+									       onChange={handleAuthorizationDataSet}/>
+								</div>
+								<br/>
+							</>
+						) : ""
+				}
 
 				<br/>
 
-				<div>
-					<div>
-						<label>Basic</label>
-						<div style={{marginLeft: '15px'}}>
-							<label>UserName {"  "}</label>
-							<input type="text" name="user_name" value={authData.user_name}
-							       onChange={handleAuthorizationDataSet}/>
-							<br/>
+				{
+					(Number(authorizationType) === AUTH_TYPE_BASIC) ? (
+						<div>
+							<div>
+								<label>Basic</label>
+								<div style={{marginLeft: '15px'}}>
+									<label>UserName {"  "}</label>
+									<input type="text" name="user_name" value={authData.user_name} autoComplete="off"
+									       onChange={handleAuthorizationDataSet}/>
+									<br/>
 
-							<label>Password {"   "}</label>
-							<input type="password" name="password" value={authData.password}
-							       onChange={handleAuthorizationDataSet}/>
+									<label>Password {"   "}</label>
+									<input type="password" name="password" value={authData.password}
+									       autoComplete="off"
+									       onChange={handleAuthorizationDataSet}/>
+								</div>
+							</div>
 						</div>
-					</div>
-				</div>
+					) : ""
+				}
 
 
 			</div>
@@ -397,6 +437,11 @@ const Dashboard = () => {
 			<br/>
 
 			<div>
+				<textarea name="jsonData" rows={10} cols={50} value={jsonData}
+				          onChange={e => setJsonData(e.target.value)}/>
+			</div>
+			<br/>
+			<div>
 				{
 					Object.entries(tempData).map(([key, value]) => (
 						<>
@@ -407,11 +452,6 @@ const Dashboard = () => {
 						</>
 					))
 				}
-			</div>
-
-			<div>
-				<textarea name="jsonData" rows={10} cols={50} value={jsonData}
-				          onChange={e => setJsonData(e.target.value)}/>
 			</div>
 
 			<br/>
