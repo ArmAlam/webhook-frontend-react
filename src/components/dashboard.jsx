@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import {useState, useEffect, Fragment} from "react";
 import axios from "axios";
 import {
 	GET,
@@ -13,7 +13,7 @@ import {
 
 const Dashboard = () => {
 	const tempData = {
-		"first_name": 'John',
+		first_name: "John",
 		last_name: "doe",
 		email: "aoyan@orangetoolz.com",
 		password: 123456,
@@ -23,20 +23,8 @@ const Dashboard = () => {
 	const [authorizationType, setAuthorizationType] = useState(AUTH_TYPE_NONE);
 	const [url, setUrl] = useState('');
 	const [authData, setAuthData] = useState({token: '', user_name: '', password: ''});
-	const inputArr = [
-		{
-			key: "",
-			value: "",
-		}
-	];
-	const qParams = [
-		{
-			key: "",
-			value: "",
-		}
-	];
-	const [headers, setHeaders] = useState(inputArr);
-	const [queryParams, setQueryParams] = useState(qParams);
+	const [headers, setHeaders] = useState([{key: "", value: "",}]);
+	const [queryParams, setQueryParams] = useState([{key: "", value: "",}]);
 	const [apiResponse, setApiResponse] = useState('');
 	const [jsonData, setJsonData] = useState('');
 	const [requestList, setRequestList] = useState([]);
@@ -241,7 +229,6 @@ const Dashboard = () => {
 		setRequestName(name)
 
 		// set body data
-
 		if (body_data) {
 			let testStr = JSON.stringify(body_data)
 			const tempString = testStr.substring(1, testStr.length - 1);
@@ -289,8 +276,6 @@ const Dashboard = () => {
 				token: tempAuthData.token || '',
 			}))
 		}
-
-
 	}
 
 
@@ -391,7 +376,7 @@ const Dashboard = () => {
 				<button onClick={addHeaderInput}>+</button>
 				{headers.map((item, i) => {
 					return (
-						<>
+						<Fragment key={i.toString()}>
 							<input
 								onChange={handleHeaderChange}
 								name="key"
@@ -407,7 +392,7 @@ const Dashboard = () => {
 								type="text"
 							/>
 							<br/>
-						</>
+						</Fragment>
 					);
 				})}
 			</div>
@@ -417,7 +402,7 @@ const Dashboard = () => {
 				<button onClick={addQueryParamInput}>+</button>
 				{queryParams.map((item, i) => {
 					return (
-						<>
+						<Fragment key={i.toString()}>
 							<input
 								onChange={handleQueryParamsChange}
 								name="key"
@@ -433,7 +418,7 @@ const Dashboard = () => {
 								type="text"
 							/>
 							<br/>
-						</>
+						</Fragment>
 					);
 				})}
 			</div>
@@ -447,12 +432,10 @@ const Dashboard = () => {
 			<div>
 				{
 					Object.entries(tempData).map(([key, value]) => (
-						<>
-							<div key={key}>
-								{key} : {value} {"  "}
-								<button onClick={() => mapDataToPayLoad(key, value)}>Map</button>
-							</div>
-						</>
+						<div key={key}>
+							{key} : {value} {"  "}
+							<button onClick={() => mapDataToPayLoad(key, value)}>Map</button>
+						</div>
 					))
 				}
 			</div>
@@ -472,12 +455,10 @@ const Dashboard = () => {
 			<div>
 				{
 					requestList.length && requestList.map((request) => (
-						<>
-							<div key={request.id.toString()}>
-								{request.name} {"    "}
-								<button onClick={() => getRequestDetailsById(request.id)}>{"   "}Map</button>
-							</div>
-						</>
+						<div key={request.id.toString()}>
+							{request.name} {"    "}
+							<button onClick={() => getRequestDetailsById(request.id)}>{"   "}Map</button>
+						</div>
 					))
 				}
 			</div>
