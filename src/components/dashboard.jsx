@@ -151,6 +151,9 @@ const Dashboard = () => {
 		}
 
 		if (jsonData !== '' && methodType !== GET) {
+			if (!isValidJson(`{${jsonData}}`)) {
+				alert('invalid json')
+			}
 			obj.request_payload = JSON.parse(`{${jsonData}}`);
 		}
 
@@ -172,7 +175,7 @@ const Dashboard = () => {
 			if (response && response.data && response.data.status) {
 				setApiResponse(JSON.stringify(response.data.data))
 			}
-			console.log('response', response)
+
 		} catch (e) {
 			console.log('errr', e);
 		}
@@ -200,12 +203,19 @@ const Dashboard = () => {
 
 	const mapDataToPayLoad = (key, value) => {
 
+		if (isValidJson(value)) {
+			value = `${value}`;
+		} else {
+			value = `"${value}"`
+		}
+
+
 		setJsonData(prevState => {
 			if (prevState === '') {
-				return prevState + `"${key}" : "${value}"`
+				return prevState + `"${key}" : ${value}`
 			}
 
-			return prevState + `,\n"${key}" : "${value}"`
+			return prevState + `,\n"${key}" : ${value}`
 		})
 	}
 
@@ -226,9 +236,7 @@ const Dashboard = () => {
 		if (isObject(value)) {
 			return JSON.stringify(value);
 		}
-
 		return value;
-
 	}
 
 
@@ -305,7 +313,15 @@ const Dashboard = () => {
 		if (response.data && response.data.status) {
 			setRequestData(response.data.data)
 		}
+	}
 
+	const isValidJson = (str) => {
+		try {
+			JSON.parse(str);
+		} catch (e) {
+			return false;
+		}
+		return true;
 	}
 
 
