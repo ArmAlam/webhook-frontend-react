@@ -17,7 +17,12 @@ const Dashboard = () => {
 		last_name: "doe",
 		email: "aoyan@orangetoolz.com",
 		password: 123456,
-		confirm_password: 123456
+		confirm_password: 123456,
+		nested: {
+			"person": "alex",
+			"age": "16",
+			"country": "USA",
+		}
 	};
 	const [methodType, setMethodType] = useState(GET);
 	const [authorizationType, setAuthorizationType] = useState(AUTH_TYPE_NONE);
@@ -209,6 +214,21 @@ const Dashboard = () => {
 		if (response && response.data && response.data.status && response.data.data) {
 			setRequestList(response.data.data);
 		}
+	}
+
+
+	const isObject = (obj) => {
+		return obj != null && obj.constructor.name === "Object"
+	}
+
+	const getValue = (value) => {
+
+		if (isObject(value)) {
+			return JSON.stringify(value);
+		}
+
+		return value;
+
 	}
 
 
@@ -433,8 +453,8 @@ const Dashboard = () => {
 				{
 					Object.entries(tempData).map(([key, value]) => (
 						<div key={key}>
-							{key} : {value} {"  "}
-							<button onClick={() => mapDataToPayLoad(key, value)}>Map</button>
+							{key} : {getValue(value)} {"  "}
+							<button onClick={() => mapDataToPayLoad(key, getValue(value))}>Map</button>
 						</div>
 					))
 				}
