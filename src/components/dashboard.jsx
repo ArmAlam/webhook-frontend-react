@@ -22,6 +22,11 @@ const Dashboard = () => {
 			"person": "alex",
 			"age": "16",
 			"country": "USA",
+			inner: {
+				"person": "alex",
+				"age": "16",
+				"country": "USA",
+			}
 		}
 	};
 	const [methodType, setMethodType] = useState(GET);
